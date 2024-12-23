@@ -1,0 +1,25 @@
+output/
+venv/
+.rpa/
+.idea/
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+.virtual_documents/
+*/.virtual_documents/*
+.vscode
+.DS_Store
+*.pyc
+*.zip
+testrun/*
+.~lock*
+*.pkl
+
+# Dev environment
+devdata/work-items-*/*
+devdata/robot-data-dir
+devdata/vault.json
+devdata/env.json
+devdata/env-testing.json
+devdata/env-consumer*.json
+devdata/env-producer*.json
+devdata/env-reporter*.json
