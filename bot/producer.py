@@ -2,9 +2,11 @@
 
 import functools
 
-from robocorp import log
+import aconio.db as db
+import aconio.core.errors as errors
 
-from bot import _items, _config
+import bot._items as _items
+import bot._config as _config
 
 
 @functools.lru_cache
@@ -12,9 +14,18 @@ def config() -> _config.ProducerConfig:
     return _config.ProducerConfig()
 
 
+@functools.lru_cache
+def bmd_db() -> db.MSSQLConnection:
+    conn = db.MSSQLConnection().configure_from_vault("bmd_db_credentials")
+    return conn
+
+
 def setup() -> None:
     """Setup producer process."""
-    pass
+
+    bmd_db().connect()
+    if not bmd_db().is_connected():
+        raise errors.ApplicationError("Failed to connect to BMD database")
 
 
 def teardown() -> None:
@@ -25,15 +36,4 @@ def teardown() -> None:
 def run() -> list[_items.Item]:
     """Generate a list of work items."""
 
-    work_items = []
-
-    # TODO: Implement producer
-
-    if config().max_work_items:
-        log.warn(
-            "Max work items set - only creating "
-            f"{config().max_work_items} work items!"
-        )
-        return work_items[: int(config().max_work_items)]
-    else:
-        return work_items
+    return _items.create_work_items_from_db(bmd_db())

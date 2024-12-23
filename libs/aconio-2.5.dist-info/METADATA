@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: aconio
-Version: 2.0
+Version: 2.5
 Summary: Create 🐍 automations in no time with Robocorp & Aconio!
 Author-email: Patrick Krukenfellner <patrick.krukenfellner@aconio.net>, Matthias Reumann <matthias.reumann@tum.de>
 Project-URL: Homepage, https://github.com/ACONIO/aconio
@@ -105,5 +105,5 @@ python -m robocorp.tasks run tests/<module>/tests.py
 
 To only run a specific task within a `tests.py` file, specify the task with the `-t` parameter:
 ```bash
-RC_VAULT_SECRET_MANAGER="FileSecrets" RC_VAULT_SECRET_FILE="./secrets.json" python -m robocorp.tasks run tests/dao/tests_client.py -t test_get_client_contact_person
+RC_VAULT_SECRET_MANAGER="FileSecrets" RC_VAULT_SECRET_FILE="./secrets.json" python -m robocorp.tasks run tests/dao/tests.py -t test_set_salutation
 ```

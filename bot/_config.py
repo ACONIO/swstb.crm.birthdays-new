@@ -1,58 +1,35 @@
 """Robot configuration management."""
 
 import os
-import sys
-import yaml
 import pydantic
 
-import functools
 
-from aconio.core import errors
+class BaseConfig(pydantic.BaseModel):
+    """Shared configuration."""
 
-_config_path = None
-
-
-class CustomBase(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        extra="forbid", use_enum_values=True, arbitrary_types_allowed=True
-    )
-    model_config = pydantic.ConfigDict(coerce_numbers_to_str=True)
+    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
 
-class Config(CustomBase):
-    """Process Configurations"""
+class ProducerConfig(BaseConfig):
+    """Producer configuration."""
 
-    # TODO Create config
     pass
 
 
-def set_config_path(path: str) -> None:
-    """Set the path to the configuration file.
+class ConsumerConfig(BaseConfig):
+    """Consumer configuration."""
 
-    Args:
-        path:
-            The path to the `.yaml` configuration file.
+    # The != "false" condition prevents the test mode from accidentally being
+    # turned off, for example through a typo. Everything which is not
+    # "false" will resolve to "true" and thus enable the test mode.
+    test_mode: bool = os.environ.get("TEST_MODE", "true").lower() != "false"
     """
-    globals()["_config_path"] = path
+    If enabled, the bot does not perform any "critical" actions, such as
+    sending e-mails, or inserting data in applications.
+    Per default, test mode is enabled.
+    """
 
-
-@functools.lru_cache
-def config() -> Config:
-    with open(_config_path, encoding="UTF-8") as stream:
-        try:
-            data = yaml.safe_load(stream)
-            return Config(**data)
-        except yaml.YAMLError as exc:
-            raise errors.ApplicationError(
-                "Failed to load YAML config!"
-            ) from exc
-
-
-def dump() -> None:
-    """Print the configuration."""
-    yaml.dump(config().model_dump(exclude_unset=True), sys.stdout)
-
-
-def env() -> str:
-    """Return the execution environment ("dev" | "test" | "prod")."""
-    return os.environ.get("ENVIRONMENT").lower()
+    subject: str = os.environ.get("SUBJECT")
+    """
+    The subject of the birthday congratulations e-mail to send.
+    """

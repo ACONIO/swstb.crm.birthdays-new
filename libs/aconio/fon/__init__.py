@@ -23,6 +23,7 @@ info, meta = fon.query_steuerkonto(
 
 import re
 import time
+import enum
 import requests
 
 from functools import lru_cache
@@ -33,6 +34,15 @@ from bs4 import BeautifulSoup
 from robocorp import browser
 
 from aconio.fon import _config
+
+__all__ = [
+    "configure",
+    "repayment",
+    "RepaymentLocation",
+    "RepaymentRecipient",
+    "download_steuerkonto_pdf",
+    "query_steuerkonto",
+]
 
 
 @lru_cache  # Always return the same instance.
@@ -60,6 +70,93 @@ def configure(teilnehmer_id: str, benutzer_id: str, pin: str) -> None:
     config().teilnehmer_id = teilnehmer_id
     config().benutzer_id = benutzer_id
     config().pin = pin
+
+
+class RepaymentLocation(enum.Enum):
+    DOMESTIC = enum.auto()
+    FOREIGN = enum.auto()
+
+
+@dataclass
+class RepaymentRecipient:
+    name: str
+    amount: str
+    iban: str
+    bic: str
+    bank_name: str
+    is_cash: bool = False
+
+
+def repayment(
+    tax_number: str,
+    recipients: list[RepaymentRecipient] | None = None,
+    apply_data: bool = False,
+    amount: str = "",
+    location: RepaymentLocation = RepaymentLocation.DOMESTIC,
+    test_mode: bool = True,
+) -> None:
+    """Perform a "Rückzahlungsantrag"."""
+
+    recipients = recipients or []
+    if not recipients and not apply_data:
+        raise ValueError(
+            "At least one recipient or apply_data must be provided."
+        )
+
+    auth = _login()
+    page = _open_page(auth.cookies)
+
+    # Navigate to the "Rückzahlungsantrag" page.
+    add_url = f"{config().base_url}/fon/p/weitereServices.do"
+    page.goto(f"{add_url}?reqkey={auth.request_key}")
+    page.locator("[id='antrrz']").check()  # "Rückzahlung"
+    page.locator("input[type='submit']").click()  # "Weiter"
+
+    time.sleep(1)  # Wait for page to load.
+
+    # Fill tax number and choose repayment location.
+    page.locator("[id='stnr']").fill(tax_number)
+    match location:
+        case RepaymentLocation.DOMESTIC:
+            pass  # Chosen by default.
+        case RepaymentLocation.FOREIGN:
+            raise NotImplementedError(
+                '"Auslandsrückzahlung" is not implemented.'
+            )
+    page.locator("input[type='submit']").click()  # "Weiter"
+
+    time.sleep(1)  # Wait for page to load.
+
+    # Fill recipient data.
+    for i in range(min(len(recipients), 3)):
+        r = recipients[i]
+
+        page.locator(f"[id='empfaenger[{i}].name']").fill(r.name)
+        page.locator(f"[id='empfaenger[{i}].betrag']").fill(r.amount)
+
+        if r.is_cash:
+            page.locator("[id='empfaenger-0-barb']").check()
+
+        page.locator(f"[id='empfaenger[{i}].iban']").fill(r.iban)
+        page.locator(f"[id='empfaenger[{i}].bic']").fill(r.bic)
+        page.locator(f"[id='empfaenger[{i}].bankname']").fill(r.bank_name)
+
+    # "Oben angezeigte Daten übernehmen"
+    if apply_data:
+        page.locator("[id='fillData']").click()
+        if amount:
+            page.locator("[id='empfaenger[0].betrag']").fill(amount)
+        else:
+            raise ValueError(
+                "Amount must be more than zero!"
+            )
+
+    if not test_mode:
+        page.locator("input[type='submit']").click()
+
+    time.sleep(2)  # Wait for submission.
+
+    page.close()
 
 
 def download_steuerkonto_pdf(
@@ -331,7 +428,7 @@ def _handle_personification(
 def _open_page(cookies: requests.cookies.RequestsCookieJar) -> any:
     """Opens a headless Chrome browser and sets the given cookies."""
 
-    browser.configure(headless=True)
+    browser.configure(headless=False)
     browser.context().add_cookies(
         [
             {"name": c.name, "value": c.value, "url": config().base_url}

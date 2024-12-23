@@ -1,7 +1,5 @@
-# <robot_name>
-[![Static Badge](https://img.shields.io/badge/Solution_Design-black?logo=eraser)](<link_to_solution_design>)
-
-<robot_description>
+# SW STB - Automatic Birthday E-Mails
+A simple bot to scan the BMD database daily to find clients having a birthday and send automated congratulation e-mails.
 
 ## Notes
 Important information about the template project.
@@ -19,30 +17,6 @@ In order for this template to work properly, a few initial setup steps have to b
 
 > [!IMPORTANT]
 > After you've completed all setup steps, you may delete the **Notes** and **First Steps** sections from `README.md`.
-
-### 1. Robot Documentation
-Find and replace the following placeholders in `README.md`:
-- `<robot_name>`
-- `<robot_description>`
-- `<link_to_solution_design>` *(If available, otherwise you may remove the whole link)*
-
-### 2. VS-Code Settings
-Add the according VS-Code settings to your project from our [VS-Code Settings Repo](https://github.com/ACONIO/aconio.common.vscode-settings/tree/main).
-
-### 3. Update `aconio` Library
-If the `aconio` library version of the template respository is not the newest version, use the `scripts/install_aconio.py` script to update the `aconio` library to the latest version.
-
-```bash
-python scripts/install_aconio.py <git_tag> <github_token>
-```
-
-### 4. Resolve `TODO`'s
-Some values and directives in the template need to be adapted to the specific needs of your project. These locations are marked with `TODO` in the code.
-
-Search for the string `TODO` in your project and resolve them to prepare the template for your project.
-
-### 5. Remove Readme Instructions
-Once you've completed all steps above, you can remove this section from the `README.md`.
 
 ## Development
 This section holds useful information & commands for the development process.

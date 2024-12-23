@@ -7,18 +7,10 @@ tasks:
   Consumer:
     shell: python -m robocorp.tasks run tasks.py -t consumer
 
-  # rcc run -e "devdata/env-reporter.json" --task "Reporter"
-  Reporter:
-    shell: python -m robocorp.tasks run tasks.py -t reporter
-
 devTasks:
   # rcc run -e "devdata/env-testing.json" --dev --task "Generic Test"
   Generic Test:
     shell: python -m robocorp.tasks run tests.py -t test_generic
-
-  # rcc run -e "devdata/env-testing.json" --dev --task "Test DB-Query"
-  Test DB-Query:
-    shell: python -m robocorp.tasks run tests.py -t test_db_query
 
   # rcc run -e "devdata/env-testing.json" --dev --task "Test Create Email"
   Test Create Email:
